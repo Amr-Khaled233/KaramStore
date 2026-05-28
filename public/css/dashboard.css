@@ -553,6 +553,67 @@ tr:hover td { background: rgba(245,158,11,.02); }
 }
 @media (max-width: 1100px) { .home-grid { grid-template-columns: 1fr; } }
 
+/* ===========================
+   MONTH NAVIGATION
+=========================== */
+.month-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 10px 16px;
+    margin-bottom: 18px;
+}
+.month-display {
+    flex: 1;
+    text-align: center;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--text);
+}
+.month-nav-btn {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    color: var(--text);
+    font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+    flex-shrink: 0;
+}
+.month-nav-btn:hover:not(:disabled) { background: var(--gold); color: #0a0f1e; border-color: var(--gold); }
+.month-nav-btn:disabled { opacity: .25; cursor: not-allowed; }
+
+/* Highlight selected month row */
+.row-selected td { background: rgba(245,158,11,.07) !important; }
+.row-selected td:first-child { border-right: 3px solid var(--gold); }
+
+/* ===========================
+   LOADING OVERLAY
+=========================== */
+.loading-overlay {
+    position: fixed; inset: 0;
+    background: rgba(10,15,30,.65);
+    backdrop-filter: blur(3px);
+    z-index: 500;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+.loading-overlay.show { display: flex; }
+.loading-spinner {
+    width: 44px; height: 44px;
+    border: 3px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin .65s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* LTR adjustments for English mode */
 [dir="ltr"] .sidebar { right: auto; left: 0; border-left: none; border-right: 1px solid var(--border); }
 [dir="ltr"] .main    { margin-right: 0; margin-left: var(--sidebar-w); }
