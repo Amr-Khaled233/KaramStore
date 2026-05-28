@@ -13,13 +13,13 @@ const API = {
     },
 
     /* ---- Expenses ---- */
-    getExpenses(month)      { return this._req(`/api/expenses?month=${month}`); },
+    getExpenses(month)      { return this._req(month ? `/api/expenses?month=${month}` : '/api/expenses'); },
     addExpense(body)        { return this._req('/api/expenses', { method:'POST', body: JSON.stringify(body) }); },
     updateExpense(id, body) { return this._req(`/api/expenses/${id}`, { method:'PUT',  body: JSON.stringify(body) }); },
     deleteExpense(id)       { return this._req(`/api/expenses/${id}`, { method:'DELETE' }); },
 
     /* ---- Revenue ---- */
-    getRevenue(month)       { return this._req(`/api/revenue?month=${month}`); },
+    getRevenue(month)       { return this._req(month ? `/api/revenue?month=${month}` : '/api/revenue'); },
     addRevenue(body)        { return this._req('/api/revenue', { method:'POST', body: JSON.stringify(body) }); },
     updateRevenue(id, body) { return this._req(`/api/revenue/${id}`, { method:'PUT',  body: JSON.stringify(body) }); },
     deleteRevenue(id)       { return this._req(`/api/revenue/${id}`, { method:'DELETE' }); },

@@ -13,7 +13,7 @@ let _editRevId    = null;
 ============================================================ */
 function setText(id, v)   { const el = document.getElementById(id); if (el) el.textContent = v; }
 function getVal(id)       { return (document.getElementById(id)?.value || '').trim(); }
-function setVal(id, v)    { const el = document.getElementById(id); if (el) el.value = v; }
+function setVal(id, v)    { const el = document.getElementById(id); if (el) el.value = v ?? ''; }
 function clearFields(ids) { ids.forEach(id => setVal(id, '')); }
 
 function fmtMoney(n) {
@@ -23,9 +23,9 @@ function fmtMoney(n) {
 }
 
 function emptyRow(icon, msg, cols) {
-    return `<tr><td colspan="${cols}"><div class="empty">
-        <div class="ei">${icon}</div><p>${msg}</p>
-    </div></td></tr>`;
+    return `<tr><td colspan="${cols}">
+        <div class="empty"><div class="ei">${icon}</div><p>${msg}</p></div>
+    </td></tr>`;
 }
 
 function showLoading(v) {
@@ -42,7 +42,7 @@ function toast(msg, isErr = false) {
     _toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
 }
 
-function profitCard(cardId, profit, expTotal, revTotal, noDataMsg) {
+function setProfitCard(cardId, profit, expTotal, revTotal) {
     const card = document.getElementById(cardId);
     if (!card) return;
     card.className = 'profit-card ' + (profit > 0 ? 'is-profit' : profit < 0 ? 'is-loss' : 'is-zero');
@@ -54,14 +54,12 @@ function profitCard(cardId, profit, expTotal, revTotal, noDataMsg) {
                 <div class="pc-amount">${profit >= 0 ? '+' : ''}${fmtMoney(profit)}</div>
             </div>
         </div>
-        <div class="pc-sub">${expTotal !== null
-            ? `مصروفات: ${fmtMoney(expTotal)} &nbsp;|&nbsp; إيرادات: ${fmtMoney(revTotal)}`
-            : noDataMsg}</div>
+        <div class="pc-sub">مصروفات: ${fmtMoney(expTotal)} &nbsp;|&nbsp; إيرادات: ${fmtMoney(revTotal)}</div>
     `;
 }
 
 /* ============================================================
-   DATETIME
+   DATETIME TICKER
 ============================================================ */
 function tickTime() {
     const dt = nowEG();
@@ -70,28 +68,6 @@ function tickTime() {
 }
 setInterval(tickTime, 1000);
 tickTime();
-
-/* ============================================================
-   MONTH NAVIGATION
-============================================================ */
-function renderMonthNav() {
-    setText('selected-month-label', monthLabel(selectedMonth));
-    const isNow = selectedMonth === currentMonthKey();
-    const btnNext = document.getElementById('btn-next-month');
-    if (btnNext) btnNext.disabled = isNow;
-}
-
-function changeMonth(delta) {
-    selectedMonth = shiftMonth(selectedMonth, delta);
-    renderMonthNav();
-    if (currentView === 'months') renderMonths();
-}
-
-function goToNow() {
-    selectedMonth = currentMonthKey();
-    renderMonthNav();
-    if (currentView === 'months') renderMonths();
-}
 
 /* ============================================================
    VIEW ROUTER
@@ -104,11 +80,8 @@ function showView(name) {
     currentView = name;
     closeSidebar();
     window.scrollTo(0, 0);
-
-    if (name === 'home')     renderHome();
-    if (name === 'months')   renderMonths();
-    if (name === 'expenses') renderExpenses();
-    if (name === 'revenue')  renderRevenue();
+    if (name === 'home')   renderHome();
+    if (name === 'months') renderMonths();
 }
 
 /* ============================================================
@@ -137,19 +110,44 @@ document.addEventListener('keydown', e => {
 });
 
 /* ============================================================
+   MONTH PICKER
+============================================================ */
+function initMonthPicker() {
+    const picker = document.getElementById('month-picker');
+    if (picker) picker.value = selectedMonth;
+}
+
+function onMonthPicked(val) {
+    if (!val) return;
+    selectedMonth = val;
+    renderMonths();
+}
+
+function goToNow() {
+    selectedMonth = currentMonthKey();
+    const picker = document.getElementById('month-picker');
+    if (picker) picker.value = selectedMonth;
+    renderMonths();
+}
+
+/* ============================================================
    EXPENSE FORM
 ============================================================ */
 function openAddExpense() {
     _editExpId = null;
     clearFields(['exp-name','exp-amount','exp-notes']);
+    setVal('exp-date', todayStr());
     setText('modal-exp-title', 'إضافة مصروف جديد');
     openModal('modal-expense');
     setTimeout(() => document.getElementById('exp-name')?.focus(), 100);
 }
 
-function openEditExpense(id, name, amount, notes) {
+function openEditExpense(id, name, amount, notes, dateStr) {
     _editExpId = id;
-    setVal('exp-name', name); setVal('exp-amount', amount); setVal('exp-notes', notes || '');
+    setVal('exp-name',   name);
+    setVal('exp-amount', amount);
+    setVal('exp-notes',  notes || '');
+    setVal('exp-date',   dateStr || todayStr());
     setText('modal-exp-title', 'تعديل المصروف');
     openModal('modal-expense');
 }
@@ -158,26 +156,35 @@ async function submitExpense() {
     const name   = getVal('exp-name');
     const amount = parseFloat(document.getElementById('exp-amount')?.value) || 0;
     const notes  = getVal('exp-notes');
+    const dateStr = getVal('exp-date');
+
     if (!name)       { toast('⚠️ اكتب اسم المصروف', true); return; }
     if (amount <= 0) { toast('⚠️ اكتب المبلغ', true); return; }
+    if (!dateStr)    { toast('⚠️ اختر التاريخ', true); return; }
+
+    const dt = parseEntryDate(dateStr);
+
     try {
         showLoading(true);
         if (_editExpId) {
-            await API.updateExpense(_editExpId, { name, amount, notes });
+            await API.updateExpense(_editExpId, { name, amount, notes, ...dt });
             toast('✓ تم التعديل');
         } else {
-            const dt = nowEG();
-            await API.addExpense({ name, amount, notes,
-                monthKey: dt.monthKey, monthLabel: dt.monthLabel,
-                dayName: dt.dayName, date: dt.date, time: dt.time });
+            await API.addExpense({ name, amount, notes, ...dt });
             toast(`✓ ${name} — ${fmtMoney(amount)}`);
         }
         closeModal('modal-expense');
         clearFields(['exp-name','exp-amount','exp-notes']);
         _editExpId = null;
-        if (currentView === 'home')     await renderHome();
-        if (currentView === 'months')   await renderMonths();
-        if (currentView === 'expenses') await renderExpenses();
+
+        // تحديث الشهر المعروض بناءً على تاريخ الإدخال
+        if (currentView === 'months') {
+            selectedMonth = dt.monthKey;
+            const picker = document.getElementById('month-picker');
+            if (picker) picker.value = selectedMonth;
+            await renderMonths();
+        }
+        if (currentView === 'home') await renderHome();
     } catch (e) { toast('❌ ' + e.message, true); }
     finally { showLoading(false); }
 }
@@ -188,9 +195,8 @@ async function deleteExpense(id) {
         showLoading(true);
         await API.deleteExpense(id);
         toast('تم الحذف');
-        if (currentView === 'home')     await renderHome();
-        if (currentView === 'months')   await renderMonths();
-        if (currentView === 'expenses') await renderExpenses();
+        if (currentView === 'months') await renderMonths();
+        if (currentView === 'home')   await renderHome();
     } catch (e) { toast('❌ ' + e.message, true); }
     finally { showLoading(false); }
 }
@@ -201,14 +207,18 @@ async function deleteExpense(id) {
 function openAddRevenue() {
     _editRevId = null;
     clearFields(['rev-name','rev-amount','rev-notes']);
+    setVal('rev-date', todayStr());
     setText('modal-rev-title', 'إضافة إيراد جديد');
     openModal('modal-revenue');
     setTimeout(() => document.getElementById('rev-name')?.focus(), 100);
 }
 
-function openEditRevenue(id, name, amount, notes) {
+function openEditRevenue(id, name, amount, notes, dateStr) {
     _editRevId = id;
-    setVal('rev-name', name); setVal('rev-amount', amount); setVal('rev-notes', notes || '');
+    setVal('rev-name',   name);
+    setVal('rev-amount', amount);
+    setVal('rev-notes',  notes || '');
+    setVal('rev-date',   dateStr || todayStr());
     setText('modal-rev-title', 'تعديل الإيراد');
     openModal('modal-revenue');
 }
@@ -217,26 +227,34 @@ async function submitRevenue() {
     const name   = getVal('rev-name');
     const amount = parseFloat(document.getElementById('rev-amount')?.value) || 0;
     const notes  = getVal('rev-notes');
+    const dateStr = getVal('rev-date');
+
     if (!name)       { toast('⚠️ اكتب وصف الإيراد', true); return; }
     if (amount <= 0) { toast('⚠️ اكتب المبلغ', true); return; }
+    if (!dateStr)    { toast('⚠️ اختر التاريخ', true); return; }
+
+    const dt = parseEntryDate(dateStr);
+
     try {
         showLoading(true);
         if (_editRevId) {
-            await API.updateRevenue(_editRevId, { name, amount, notes });
+            await API.updateRevenue(_editRevId, { name, amount, notes, ...dt });
             toast('✓ تم التعديل');
         } else {
-            const dt = nowEG();
-            await API.addRevenue({ name, amount, notes,
-                monthKey: dt.monthKey, monthLabel: dt.monthLabel,
-                dayName: dt.dayName, date: dt.date, time: dt.time });
+            await API.addRevenue({ name, amount, notes, ...dt });
             toast(`✓ ${name} — ${fmtMoney(amount)}`);
         }
         closeModal('modal-revenue');
         clearFields(['rev-name','rev-amount','rev-notes']);
         _editRevId = null;
-        if (currentView === 'home')    await renderHome();
-        if (currentView === 'months')  await renderMonths();
-        if (currentView === 'revenue') await renderRevenue();
+
+        if (currentView === 'months') {
+            selectedMonth = dt.monthKey;
+            const picker = document.getElementById('month-picker');
+            if (picker) picker.value = selectedMonth;
+            await renderMonths();
+        }
+        if (currentView === 'home') await renderHome();
     } catch (e) { toast('❌ ' + e.message, true); }
     finally { showLoading(false); }
 }
@@ -247,35 +265,29 @@ async function deleteRevenue(id) {
         showLoading(true);
         await API.deleteRevenue(id);
         toast('تم الحذف');
-        if (currentView === 'home')    await renderHome();
-        if (currentView === 'months')  await renderMonths();
-        if (currentView === 'revenue') await renderRevenue();
+        if (currentView === 'months') await renderMonths();
+        if (currentView === 'home')   await renderHome();
     } catch (e) { toast('❌ ' + e.message, true); }
     finally { showLoading(false); }
 }
 
 /* ============================================================
-   HOME VIEW — إجمالي كل الوقت
+   HOME VIEW
 ============================================================ */
 async function renderHome() {
     try {
         const [allExp, allRev, summary] = await Promise.all([
-            API.getExpenses(),
-            API.getRevenue(),
-            API.getSummary(),
+            API.getExpenses(), API.getRevenue(), API.getSummary(),
         ]);
 
         const totalExp = allExp.reduce((s, e) => s + e.amount, 0);
         const totalRev = allRev.reduce((s, r) => s + r.amount, 0);
-        const profit   = totalRev - totalExp;
-
-        profitCard('home-profit-card', profit, totalExp, totalRev, 'أضف مصروفاتك وإيراداتك');
+        setProfitCard('home-profit-card', totalRev - totalExp, totalExp, totalRev);
         setText('home-total-exp', fmtMoney(totalExp));
         setText('home-total-rev', fmtMoney(totalRev));
 
         renderTopExpenses('home-top-exp', allExp);
         renderSummaryTable('home-monthly-body', summary);
-
     } catch (e) { toast('❌ تعذّر الاتصال بالسيرفر', true); }
 }
 
@@ -328,11 +340,12 @@ function jumpToMonth(key) {
 }
 
 /* ============================================================
-   MONTHS VIEW — شهر بشهر
+   MONTHS VIEW
 ============================================================ */
 async function renderMonths() {
-    renderMonthNav();
+    initMonthPicker();
     setText('months-sub', `مصروفات وإيرادات — ${monthLabel(selectedMonth)}`);
+
     try {
         const [expenses, revenue] = await Promise.all([
             API.getExpenses(selectedMonth),
@@ -341,113 +354,69 @@ async function renderMonths() {
 
         const totalExp = expenses.reduce((s, e) => s + e.amount, 0);
         const totalRev = revenue.reduce((s, r) => s + r.amount, 0);
-        const profit   = totalRev - totalExp;
-
-        profitCard('month-profit-card', profit, totalExp, totalRev, 'لا يوجد بيانات في هذا الشهر');
+        setProfitCard('month-profit-card', totalRev - totalExp, totalExp, totalRev);
         setText('month-total-exp', fmtMoney(totalExp));
         setText('month-total-rev', fmtMoney(totalRev));
 
-        renderMonthExpenses(expenses);
-        renderMonthRevenue(revenue);
+        // Expenses table
+        const expBody = document.getElementById('month-exp-body');
+        if (expBody) {
+            if (!expenses.length) {
+                expBody.innerHTML = emptyRow('🛒', 'لا يوجد مصروفات', 5);
+            } else {
+                expBody.innerHTML = expenses.map((e, i) => {
+                    const sN = (e.name||'').replace(/'/g,"\\'");
+                    const sO = (e.notes||'').replace(/'/g,"\\'");
+                    const rawDate = e.date || '';
+                    const isoDate = e.entryDate || (e.createdAt ? e.createdAt.split('T')[0] : todayStr());
+                    return `<tr>
+                        <td style="color:var(--text3)">${i+1}</td>
+                        <td><strong>${e.name}</strong>${e.notes?`<div class="td-sub">${e.notes}</div>`:''}</td>
+                        <td style="color:var(--red);font-weight:700">${fmtMoney(e.amount)}</td>
+                        <td style="font-size:12px;color:var(--text2)">
+                            <strong style="color:var(--gold)">${e.dayName||''}</strong><br>${rawDate}
+                        </td>
+                        <td><div style="display:flex;gap:5px">
+                            <button class="btn btn-edit btn-sm"
+                                onclick="openEditExpense('${e._id}','${sN}',${e.amount},'${sO}','${isoDate}')">تعديل</button>
+                            <button class="btn btn-danger btn-sm"
+                                onclick="deleteExpense('${e._id}')">حذف</button>
+                        </div></td>
+                    </tr>`;
+                }).join('');
+            }
+        }
+
+        // Revenue table
+        const revBody = document.getElementById('month-rev-body');
+        if (revBody) {
+            if (!revenue.length) {
+                revBody.innerHTML = emptyRow('💵', 'لا يوجد إيرادات', 5);
+            } else {
+                revBody.innerHTML = revenue.map((r, i) => {
+                    const sN = (r.name||'').replace(/'/g,"\\'");
+                    const sO = (r.notes||'').replace(/'/g,"\\'");
+                    const isoDate = r.entryDate || (r.createdAt ? r.createdAt.split('T')[0] : todayStr());
+                    return `<tr>
+                        <td style="color:var(--text3)">${i+1}</td>
+                        <td><strong>${r.name}</strong>${r.notes?`<div class="td-sub">${r.notes}</div>`:''}</td>
+                        <td style="color:var(--green);font-weight:700">${fmtMoney(r.amount)}</td>
+                        <td style="font-size:12px;color:var(--text2)">
+                            <strong style="color:var(--gold)">${r.dayName||''}</strong><br>${r.date||''}
+                        </td>
+                        <td><div style="display:flex;gap:5px">
+                            <button class="btn btn-edit btn-sm"
+                                onclick="openEditRevenue('${r._id}','${sN}',${r.amount},'${sO}','${isoDate}')">تعديل</button>
+                            <button class="btn btn-danger btn-sm"
+                                onclick="deleteRevenue('${r._id}')">حذف</button>
+                        </div></td>
+                    </tr>`;
+                }).join('');
+            }
+        }
 
     } catch (e) { toast('❌ ' + e.message, true); }
 }
 
-function entryRow(item, i, editFn, deleteFn) {
-    const safeN = (item.name||'').replace(/'/g,"\\'");
-    const safeO = (item.notes||'').replace(/'/g,"\\'");
-    return `
-        <tr>
-            <td style="color:var(--text3)">${i+1}</td>
-            <td>
-                <strong>${item.name}</strong>
-                ${item.notes ? `<div class="td-sub">${item.notes}</div>` : ''}
-            </td>
-            <td style="font-weight:700">${fmtMoney(item.amount)}</td>
-            <td style="font-size:11px;color:var(--text2);white-space:nowrap">
-                ${item.dayName || ''}<br>${item.date || ''}
-            </td>
-            <td>
-                <div style="display:flex;gap:5px">
-                    <button class="btn btn-edit btn-sm"
-                        onclick="${editFn}('${item._id}','${safeN}',${item.amount},'${safeO}')">تعديل</button>
-                    <button class="btn btn-danger btn-sm"
-                        onclick="${deleteFn}('${item._id}')">حذف</button>
-                </div>
-            </td>
-        </tr>`;
-}
-
-function renderMonthExpenses(items) {
-    const tbody = document.getElementById('month-exp-body');
-    if (!tbody) return;
-    if (!items.length) { tbody.innerHTML = emptyRow('🛒', 'لا يوجد مصروفات', 5); return; }
-    tbody.innerHTML = items.map((e, i) => entryRow(e, i, 'openEditExpense', 'deleteExpense')).join('');
-}
-
-function renderMonthRevenue(items) {
-    const tbody = document.getElementById('month-rev-body');
-    if (!tbody) return;
-    if (!items.length) { tbody.innerHTML = emptyRow('💵', 'لا يوجد إيرادات', 5); return; }
-    tbody.innerHTML = items.map((r, i) => entryRow(r, i, 'openEditRevenue', 'deleteRevenue')).join('');
-}
-
-/* ============================================================
-   EXPENSES VIEW — كل المصروفات
-============================================================ */
-async function renderExpenses() {
-    const tbody = document.getElementById('exp-body');
-    if (!tbody) return;
-    try {
-        const items = await API.getExpenses();
-        setText('exp-total', fmtMoney(items.reduce((s, e) => s + e.amount, 0)));
-        if (!items.length) { tbody.innerHTML = emptyRow('🛒', 'لا يوجد مصروفات بعد', 6); return; }
-        tbody.innerHTML = items.map((e, i) => {
-            const safeN = (e.name||'').replace(/'/g,"\\'");
-            const safeO = (e.notes||'').replace(/'/g,"\\'");
-            return `<tr>
-                <td style="color:var(--text3)">${i+1}</td>
-                <td><strong>${e.name}</strong>${e.notes?`<div class="td-sub">${e.notes}</div>`:''}</td>
-                <td style="color:var(--red);font-weight:700">${fmtMoney(e.amount)}</td>
-                <td style="color:var(--gold)">${e.dayName||''}</td>
-                <td style="font-size:12px;white-space:nowrap">${e.date||''} ${e.time?'— '+e.time:''}</td>
-                <td><div style="display:flex;gap:6px">
-                    <button class="btn btn-edit btn-sm"   onclick="openEditExpense('${e._id}','${safeN}',${e.amount},'${safeO}')">تعديل</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteExpense('${e._id}')">حذف</button>
-                </div></td>
-            </tr>`;
-        }).join('');
-    } catch (err) { toast('❌ ' + err.message, true); }
-}
-
-/* ============================================================
-   REVENUE VIEW — كل الإيرادات
-============================================================ */
-async function renderRevenue() {
-    const tbody = document.getElementById('rev-body');
-    if (!tbody) return;
-    try {
-        const items = await API.getRevenue();
-        setText('rev-total', fmtMoney(items.reduce((s, r) => s + r.amount, 0)));
-        if (!items.length) { tbody.innerHTML = emptyRow('💵', 'لا يوجد إيرادات بعد', 6); return; }
-        tbody.innerHTML = items.map((r, i) => {
-            const safeN = (r.name||'').replace(/'/g,"\\'");
-            const safeO = (r.notes||'').replace(/'/g,"\\'");
-            return `<tr>
-                <td style="color:var(--text3)">${i+1}</td>
-                <td><strong>${r.name}</strong>${r.notes?`<div class="td-sub">${r.notes}</div>`:''}</td>
-                <td style="color:var(--green);font-weight:700">${fmtMoney(r.amount)}</td>
-                <td style="color:var(--gold)">${r.dayName||''}</td>
-                <td style="font-size:12px;white-space:nowrap">${r.date||''} ${r.time?'— '+r.time:''}</td>
-                <td><div style="display:flex;gap:6px">
-                    <button class="btn btn-edit btn-sm"   onclick="openEditRevenue('${r._id}','${safeN}',${r.amount},'${safeO}')">تعديل</button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteRevenue('${r._id}')">حذف</button>
-                </div></td>
-            </tr>`;
-        }).join('');
-    } catch (err) { toast('❌ ' + err.message, true); }
-}
-
 /* ---- Init ---- */
-renderMonthNav();
 renderHome();

@@ -2,6 +2,12 @@ require('dotenv').config();
 const express  = require('express');
 const mongoose = require('mongoose');
 const path     = require('path');
+const dns      = require('dns');
+
+// Local-only DNS fix for Atlas SRV lookup (harmless, skipped on Vercel)
+if (!process.env.VERCEL) {
+    try { dns.setServers(['8.8.8.8', '1.1.1.1']); } catch {}
+}
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +31,7 @@ const entrySchema = new mongoose.Schema({
     notes:      { type: String, default: '' },
     monthKey:   { type: String, required: true, index: true },
     monthLabel: String,
+    entryDate:  String,
     dayName:    String,
     date:       String,
     time:       String,
