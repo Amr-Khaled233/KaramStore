@@ -364,6 +364,39 @@ tr:hover td { background: rgba(245,158,11,.02); }
 .view.active { display: block; }
 
 /* ===========================
+   SECTION TITLE
+=========================== */
+.section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 20px 0 10px;
+}
+
+/* ===========================
+   TOTAL BAR
+=========================== */
+.total-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: var(--text2);
+}
+.total-bar strong { font-size: 18px; }
+
+/* Mini stat cards */
+.stat-card.mini { padding: 14px; }
+.stat-val.sm    { font-size: 18px; }
+
+/* ===========================
    RESPONSIVE — TABLET
 =========================== */
 @media (max-width: 1180px) {

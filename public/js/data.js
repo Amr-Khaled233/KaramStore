@@ -1,6 +1,3 @@
-/* =====================
-   EGYPTIAN DATE/TIME
-===================== */
 const DAYS   = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 const MONTHS = ['يناير','فبراير','مارس','إبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 
@@ -17,31 +14,51 @@ function nowEG() {
     };
 }
 
-/* =====================
-   PRODUCTS CRUD
-===================== */
-function getProducts()     { return JSON.parse(localStorage.getItem('ks-products') || '[]'); }
-function _saveProducts(l)  { localStorage.setItem('ks-products', JSON.stringify(l)); }
-function addProduct(p)     { const l = getProducts(); l.unshift(p); _saveProducts(l); }
-function removeProduct(id) { _saveProducts(getProducts().filter(p => p.id !== id)); }
+/* ---- Purchases (مشتريات / مصروفات) ---- */
+function getPurchases()     { return JSON.parse(localStorage.getItem('ks-purchases') || '[]'); }
+function savePurchases(l)   { localStorage.setItem('ks-purchases', JSON.stringify(l)); }
+function addPurchase(p)     { const l = getPurchases(); l.unshift(p); savePurchases(l); }
+function removePurchase(id) { savePurchases(getPurchases().filter(x => x.id !== id)); }
 
-/* =====================
-   SALES CRUD
-===================== */
-function getSales()     { return JSON.parse(localStorage.getItem('ks-sales') || '[]'); }
-function _saveSales(l)  { localStorage.setItem('ks-sales', JSON.stringify(l)); }
-function addSale(s)     { const l = getSales(); l.unshift(s); _saveSales(l); }
-function removeSale(id) { _saveSales(getSales().filter(s => s.id !== id)); }
+/* ---- Operations (عمليات / إيرادات) ---- */
+function getOperations()     { return JSON.parse(localStorage.getItem('ks-operations') || '[]'); }
+function saveOperations(l)   { localStorage.setItem('ks-operations', JSON.stringify(l)); }
+function addOperation(o)     { const l = getOperations(); l.unshift(o); saveOperations(l); }
+function removeOperation(id) { saveOperations(getOperations().filter(x => x.id !== id)); }
 
-/* =====================
-   AGGREGATIONS
-===================== */
-function getMonthlyRevenue() {
+/* ---- Summary ---- */
+function getSummary() {
+    const purchases  = getPurchases();
+    const operations = getOperations();
+    const { monthKey } = nowEG();
+
+    const totalExpenses    = purchases.reduce((s, p) => s + p.amount, 0);
+    const totalRevenue     = operations.reduce((s, o) => s + o.amount, 0);
+    const monthExpenses    = purchases.filter(p => p.monthKey === monthKey).reduce((s, p) => s + p.amount, 0);
+    const monthRevenue     = operations.filter(o => o.monthKey === monthKey).reduce((s, o) => s + o.amount, 0);
+
+    return {
+        totalExpenses,
+        totalRevenue,
+        netProfit:    totalRevenue - totalExpenses,
+        monthExpenses,
+        monthRevenue,
+        monthProfit:  monthRevenue - monthExpenses,
+    };
+}
+
+/* ---- Monthly breakdown ---- */
+function getMonthlyData() {
     const map = {};
-    getSales().forEach(s => {
-        if (!map[s.monthKey]) map[s.monthKey] = { label: s.monthLabel, total: 0, count: 0 };
-        map[s.monthKey].total += s.amount;
-        map[s.monthKey].count++;
+    getPurchases().forEach(p => {
+        if (!map[p.monthKey]) map[p.monthKey] = { label: p.monthLabel, expenses: 0, revenue: 0 };
+        map[p.monthKey].expenses += p.amount;
     });
-    return Object.entries(map).sort((a, b) => a[0].localeCompare(b[0]));
+    getOperations().forEach(o => {
+        if (!map[o.monthKey]) map[o.monthKey] = { label: o.monthLabel, expenses: 0, revenue: 0 };
+        map[o.monthKey].revenue += o.amount;
+    });
+    return Object.entries(map)
+        .sort((a, b) => b[0].localeCompare(a[0]))
+        .map(([key, d]) => ({ key, ...d, profit: d.revenue - d.expenses }));
 }
