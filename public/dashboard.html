@@ -205,8 +205,10 @@
             <button class="modal-x" onclick="closeModal('modal-expense')">✕</button>
         </div>
         <div class="form-group">
-            <label class="form-label">الاسم / الوصف *</label>
-            <input type="text" class="form-input" id="exp-name" placeholder="مثال: ورق A4، حبر طابعة...">
+            <label class="form-label">الصنف / المصروف *</label>
+            <select class="form-input" id="exp-name-select" onchange="onExpPresetChange()"></select>
+            <input type="text" class="form-input" id="exp-name-custom"
+                   placeholder="اكتب اسم المصروف..." style="display:none;margin-top:8px">
         </div>
         <div class="form-row">
             <div class="form-group">

@@ -169,18 +169,54 @@ document.addEventListener('click', e => {
 /* ============================================================
    EXPENSE FORM
 ============================================================ */
+function fillExpensePresets() {
+    const sel = document.getElementById('exp-name-select');
+    if (!sel) return;
+    sel.innerHTML = EXPENSE_PRESETS.map(p => `<option value="${p}">${p}</option>`).join('')
+        + `<option value="__other__">✏️ أخرى (اكتب بنفسك)</option>`;
+}
+
+function onExpPresetChange() {
+    const sel    = document.getElementById('exp-name-select');
+    const custom = document.getElementById('exp-name-custom');
+    if (sel.value === '__other__') {
+        custom.style.display = 'block';
+        custom.focus();
+    } else {
+        custom.style.display = 'none';
+        custom.value = '';
+    }
+}
+
+function getExpenseName() {
+    const sel = document.getElementById('exp-name-select');
+    return sel.value === '__other__' ? getVal('exp-name-custom') : sel.value;
+}
+
 function openAddExpense() {
     _editExpId = null;
-    clearFields(['exp-name','exp-amount','exp-notes']);
+    fillExpensePresets();
+    setVal('exp-name-select', EXPENSE_PRESETS[0]);
+    document.getElementById('exp-name-custom').style.display = 'none';
+    clearFields(['exp-name-custom','exp-amount','exp-notes']);
     setVal('exp-date', todayStr());
     setText('modal-exp-title', 'إضافة مصروف جديد');
     openModal('modal-expense');
-    setTimeout(() => document.getElementById('exp-name')?.focus(), 100);
 }
 
 function openEditExpense(id, name, amount, notes, dateStr) {
     _editExpId = id;
-    setVal('exp-name',   name);
+    fillExpensePresets();
+    const custom = document.getElementById('exp-name-custom');
+    if (EXPENSE_PRESETS.includes(name)) {
+        setVal('exp-name-select', name);
+        custom.style.display = 'none';
+        custom.value = '';
+    } else {
+        setVal('exp-name-select', '__other__');
+        custom.style.display = 'block';
+        custom.value = name;
+    }
     setVal('exp-amount', amount);
     setVal('exp-notes',  notes || '');
     setVal('exp-date',   dateStr || todayStr());
@@ -189,7 +225,7 @@ function openEditExpense(id, name, amount, notes, dateStr) {
 }
 
 async function submitExpense() {
-    const name   = getVal('exp-name');
+    const name   = getExpenseName();
     const amount = parseFloat(document.getElementById('exp-amount')?.value) || 0;
     const notes  = getVal('exp-notes');
     const dateStr = getVal('exp-date');
@@ -210,7 +246,7 @@ async function submitExpense() {
             toast(`✓ ${name} — ${fmtMoney(amount)}`);
         }
         closeModal('modal-expense');
-        clearFields(['exp-name','exp-amount','exp-notes']);
+        clearFields(['exp-name-custom','exp-amount','exp-notes']);
         _editExpId = null;
 
         // تحديث الشهر المعروض بناءً على تاريخ الإدخال
