@@ -110,25 +110,61 @@ document.addEventListener('keydown', e => {
 });
 
 /* ============================================================
-   MONTH PICKER
+   MONTH PICKER (custom Arabic dropdown)
 ============================================================ */
+let ddYear = new Date().getFullYear();
+
 function initMonthPicker() {
-    const picker = document.getElementById('month-picker');
-    if (picker) picker.value = selectedMonth;
+    setText('month-select-label', monthLabel(selectedMonth));
+    ddYear = parseInt(selectedMonth.split('-')[0]);
+    renderMonthGrid();
 }
 
-function onMonthPicked(val) {
-    if (!val) return;
-    selectedMonth = val;
+function toggleMonthDropdown() {
+    const dd = document.getElementById('month-dropdown');
+    const open = dd.classList.toggle('open');
+    if (open) { ddYear = parseInt(selectedMonth.split('-')[0]); renderMonthGrid(); }
+}
+
+function closeMonthDropdown() {
+    document.getElementById('month-dropdown')?.classList.remove('open');
+}
+
+function ddYearShift(delta) {
+    ddYear += delta;
+    renderMonthGrid();
+}
+
+function renderMonthGrid() {
+    setText('dd-year', ddYear);
+    const grid = document.getElementById('month-dd-grid');
+    if (!grid) return;
+    const selY = parseInt(selectedMonth.split('-')[0]);
+    const selM = parseInt(selectedMonth.split('-')[1]) - 1;
+    grid.innerHTML = MONTHS_AR.map((name, i) => {
+        const active = (ddYear === selY && i === selM);
+        return `<button type="button" class="month-cell${active ? ' active' : ''}" onclick="pickMonth(${i})">${name}</button>`;
+    }).join('');
+}
+
+function pickMonth(i) {
+    selectedMonth = `${ddYear}-${String(i + 1).padStart(2, '0')}`;
+    closeMonthDropdown();
+    initMonthPicker();
     renderMonths();
 }
 
 function goToNow() {
     selectedMonth = currentMonthKey();
-    const picker = document.getElementById('month-picker');
-    if (picker) picker.value = selectedMonth;
+    initMonthPicker();
     renderMonths();
 }
+
+// Close dropdown on outside click
+document.addEventListener('click', e => {
+    const wrap = document.getElementById('month-select-wrap');
+    if (wrap && !wrap.contains(e.target)) closeMonthDropdown();
+});
 
 /* ============================================================
    EXPENSE FORM
