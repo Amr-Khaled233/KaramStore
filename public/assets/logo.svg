@@ -1,0 +1,40 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Rings -->
+  <circle cx="100" cy="100" r="96" fill="none" stroke="#f59e0b" stroke-width="2.5"/>
+  <circle cx="100" cy="100" r="90" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5 8"/>
+  <circle cx="100" cy="100" r="83" fill="none" stroke="#f59e0b" stroke-width="1"/>
+
+  <!-- Cardinal diamonds -->
+  <polygon points="100,3  104,11 100,19 96,11"  fill="#f59e0b"/>
+  <polygon points="100,181 104,189 100,197 96,189" fill="#f59e0b"/>
+  <polygon points="3,100  11,96 19,100  11,104" fill="#f59e0b"/>
+  <polygon points="181,100 189,96 197,100 189,104" fill="#f59e0b"/>
+
+  <!-- Top arc: KARAM STORE -->
+  <path id="tA" d="M 24,100 A 76,76 0 0,0 176,100" fill="none"/>
+  <text font-family="Georgia,'Times New Roman',serif" font-size="13.5" fill="#f59e0b" font-weight="bold" letter-spacing="4">
+    <textPath href="#tA" startOffset="50%" text-anchor="middle">KARAM STORE</textPath>
+  </text>
+
+  <!-- Center large ك -->
+  <text x="100" y="108" text-anchor="middle"
+    font-family="Cairo,Arial,sans-serif" font-size="54"
+    fill="#f59e0b" font-weight="900">ك</text>
+
+  <!-- Decorative lines -->
+  <line x1="40" y1="120" x2="70" y2="120" stroke="#f59e0b" stroke-width="1.5"/>
+  <line x1="130" y1="120" x2="160" y2="120" stroke="#f59e0b" stroke-width="1.5"/>
+  <circle cx="70"  cy="120" r="3" fill="#f59e0b"/>
+  <circle cx="130" cy="120" r="3" fill="#f59e0b"/>
+
+  <!-- Arabic label -->
+  <text x="100" y="139" text-anchor="middle"
+    font-family="Cairo,Arial,sans-serif" font-size="13.5"
+    fill="#f59e0b" font-weight="700">كـرم  ستـور</text>
+
+  <!-- Bottom arc -->
+  <path id="bA" d="M 30,100 A 70,70 0 0,1 170,100" fill="none"/>
+  <text font-family="Cairo,Arial,sans-serif" font-size="10" fill="#d97706" letter-spacing="3" opacity=".8">
+    <textPath href="#bA" startOffset="50%" text-anchor="middle">✦  2026  ✦</textPath>
+  </text>
+</svg>

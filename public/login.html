@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KaramStore | دخول</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/login.css">
+</head>
+<body class="login-body">
+
+    <div class="bg-deco">
+        <div class="bg-circle c1"></div>
+        <div class="bg-circle c2"></div>
+        <div class="bg-circle c3"></div>
+    </div>
+
+    <div class="login-wrap">
+        <!-- Logo -->
+        <div class="login-logo">
+            <img src="/assets/logo.svg" width="92" height="92" alt="KaramStore">
+            <h1>KaramStore</h1>
+            <p>لوحة تحكم المنتجات والمبيعات</p>
+        </div>
+
+        <!-- Card -->
+        <div class="login-card">
+            <h2>تسجيل الدخول</h2>
+
+            <div class="error-box" id="error-box"></div>
+
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label">كلمة السر</label>
+                    <div class="pw-wrap">
+                        <input
+                            type="password"
+                            class="form-input"
+                            id="password"
+                            placeholder="أدخل كلمة السر..."
+                            autocomplete="current-password"
+                            autofocus
+                        >
+                        <button type="button" class="eye-btn" id="eye-btn" onclick="togglePw()">👁️</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="login-btn" id="login-btn">دخول</button>
+            </form>
+        </div>
+
+        <div class="login-footer">KaramStore © 2026</div>
+    </div>
+
+    <script>
+        /* If already authenticated, skip login */
+        if (sessionStorage.getItem('ks-auth') === 'true') {
+            window.location.replace('/dashboard.html');
+        }
+
+        function togglePw() {
+            const inp = document.getElementById('password');
+            const btn = document.getElementById('eye-btn');
+            inp.type = inp.type === 'password' ? 'text' : 'password';
+            btn.textContent = inp.type === 'password' ? '👁️' : '🙈';
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password  = document.getElementById('password').value;
+            const btn       = document.getElementById('login-btn');
+            const errorBox  = document.getElementById('error-box');
+
+            btn.disabled    = true;
+            btn.textContent = 'جاري...';
+            errorBox.style.display = 'none';
+
+            try {
+                const res  = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+                const data = await res.json();
+
+                if (data.ok) {
+                    sessionStorage.setItem('ks-auth', 'true');
+                    window.location.replace('/dashboard.html');
+                } else {
+                    errorBox.textContent    = data.error || 'كلمة السر غلط';
+                    errorBox.style.display  = 'block';
+                    document.getElementById('password').value = '';
+                    document.getElementById('password').focus();
+                }
+            } catch {
+                errorBox.textContent   = 'في مشكلة في الاتصال بالسيرفر';
+                errorBox.style.display = 'block';
+            } finally {
+                btn.disabled    = false;
+                btn.textContent = 'دخول';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KaramStore | لوحة التحكم</title>
+    <!-- Fast auth check before any render -->
+    <script>if (sessionStorage.getItem('ks-auth') !== 'true') window.location.replace('/');</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+
+<!-- ======================================================
+     MOBILE HEADER
+====================================================== -->
+<header class="mobile-header">
+    <button class="menu-btn" onclick="toggleSidebar()" aria-label="القائمة">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="mobile-logo">
+        <img src="/assets/logo.svg" width="28" height="28" alt="">
+        <span>KaramStore</span>
+    </div>
+    <button class="logout-mini" onclick="logout()">خروج</button>
+</header>
+
+<!-- Sidebar overlay -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- ======================================================
+     SIDEBAR
+====================================================== -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+        <img src="/assets/logo.svg" width="50" height="50" alt="KaramStore Logo">
+        <div>
+            <div class="s-brand">KaramStore</div>
+            <div class="s-sub">لوحة التحكم</div>
+        </div>
+    </div>
+
+    <div class="sidebar-time" id="sidebar-time">جاري التحميل...</div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-label">القائمة الرئيسية</div>
+        <a class="nav-item active" data-view="dashboard" onclick="showView('dashboard',this)">
+            <span class="nav-icon">📊</span><span>الإحصائيات</span>
+        </a>
+        <a class="nav-item" data-view="products" onclick="showView('products',this)">
+            <span class="nav-icon">📦</span><span>المنتجات</span>
+        </a>
+        <a class="nav-item" data-view="sales" onclick="showView('sales',this)">
+            <span class="nav-icon">💰</span><span>المبيعات والأرباح</span>
+        </a>
+        <div class="nav-label" style="margin-top:8px">أدوات</div>
+        <a class="nav-item" data-view="logo" onclick="showView('logo',this)">
+            <span class="nav-icon">🖨️</span><span>اللوجو للطباعة</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-foot">
+        <button class="logout-btn" onclick="logout()">🚪 تسجيل الخروج</button>
+        <div class="sidebar-copy">KaramStore © 2026</div>
+    </div>
+</aside>
+
+<!-- ======================================================
+     MAIN CONTENT
+====================================================== -->
+<main class="main" id="main">
+
+    <!-- ==================== DASHBOARD ==================== -->
+    <div class="view active" id="view-dashboard">
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">مرحباً بك 👋</h2>
+                <p class="page-sub">نظرة عامة على تجارتك</p>
+            </div>
+            <div class="header-btns">
+                <button class="btn btn-gold" onclick="openModal('modal-product')">+ منتج جديد</button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card" style="--accent:#f59e0b">
+                <div class="stat-icon" style="--ibg:rgba(245,158,11,.15)">📦</div>
+                <div><div class="stat-val" id="stat-products">0</div><div class="stat-lbl">إجمالي المنتجات</div></div>
+            </div>
+            <div class="stat-card" style="--accent:#10b981">
+                <div class="stat-icon" style="--ibg:rgba(16,185,129,.15)">💵</div>
+                <div><div class="stat-val" id="stat-month-rev">0 ج</div><div class="stat-lbl">إيراد هذا الشهر</div></div>
+            </div>
+            <div class="stat-card" style="--accent:#3b82f6">
+                <div class="stat-icon" style="--ibg:rgba(59,130,246,.15)">📈</div>
+                <div><div class="stat-val" id="stat-total-rev">0 ج</div><div class="stat-lbl">إجمالي الإيرادات</div></div>
+            </div>
+            <div class="stat-card" style="--accent:#a855f7">
+                <div class="stat-icon" style="--ibg:rgba(168,85,247,.15)">✨</div>
+                <div><div class="stat-val" id="stat-profit">0 ج</div><div class="stat-lbl">صافي الأرباح</div></div>
+            </div>
+        </div>
+
+        <!-- Quick sale -->
+        <div class="quick-bar">
+            <div class="quick-bar-title">⚡ تسجيل سريع</div>
+            <div class="quick-fields">
+                <input type="text"   class="form-input" id="qs-desc"   placeholder="وصف الشغل / المبيعة">
+                <input type="number" class="form-input" id="qs-amount" placeholder="المبلغ (ج)" min="0" step="0.01">
+                <button class="btn btn-gold" onclick="quickSale()">✓ سجّل</button>
+            </div>
+        </div>
+
+        <!-- Two-column -->
+        <div class="dash-grid">
+            <div class="card">
+                <div class="card-head">
+                    <div class="card-title"><span>📦</span> آخر المنتجات</div>
+                    <button class="btn btn-outline btn-sm" onclick="showView('products',document.querySelector('[data-view=products]'))">عرض الكل</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>المنتج</th><th>الشراء</th><th>البيع</th><th>التاريخ</th></tr></thead>
+                        <tbody id="recent-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head"><div class="card-title"><span>📅</span> ملخص الأشهر</div></div>
+                <div id="monthly-summary"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== PRODUCTS ==================== -->
+    <div class="view" id="view-products">
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">المنتجات 📦</h2>
+                <p class="page-sub">كل المنتجات اللي بتجيبها</p>
+            </div>
+            <button class="btn btn-gold" onclick="openModal('modal-product')">+ إضافة منتج</button>
+        </div>
+
+        <div class="filters-bar">
+            <input type="search" class="form-input" id="p-search" placeholder="🔍  ابحث عن منتج..." oninput="renderProducts()">
+            <select class="form-input sel-w" id="p-cat-filter" onchange="renderProducts()">
+                <option value="">كل التصنيفات</option>
+                <option>ورق</option><option>حبر</option><option>طباعة</option>
+                <option>تصميم</option><option>معدات</option><option>أخرى</option>
+            </select>
+        </div>
+
+        <div class="card">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th><th>المنتج</th><th>التصنيف</th>
+                            <th>سعر الشراء</th><th>سعر البيع</th><th>الكمية</th>
+                            <th>ربح/وحدة</th><th>اليوم</th><th>التاريخ</th>
+                            <th>الوقت</th><th>ملاحظات</th><th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="products-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SALES ==================== -->
+    <div class="view" id="view-sales">
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">المبيعات والأرباح 💰</h2>
+                <p class="page-sub">سجل إيراداتك واحسب أرباح كل شهر</p>
+            </div>
+            <button class="btn btn-gold" onclick="openModal('modal-sale')">+ تسجيل مبيعة</button>
+        </div>
+
+        <!-- Chart -->
+        <div class="card" style="margin-bottom:20px">
+            <div class="card-head"><div class="card-title"><span>📊</span> إيرادات الأشهر</div></div>
+            <div class="chart-wrap"><canvas id="revenue-chart"></canvas></div>
+        </div>
+
+        <div class="sales-grid">
+            <div class="card">
+                <div class="card-head"><div class="card-title"><span>📋</span> سجل المبيعات</div></div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th><th>الوصف</th><th>المبلغ</th>
+                                <th>النوع</th><th>اليوم</th><th>التاريخ</th><th>الوقت</th><th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="sales-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-head"><div class="card-title"><span>📅</span> الإيراد الشهري</div></div>
+                <div id="monthly-breakdown"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== LOGO ==================== -->
+    <div class="view" id="view-logo">
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">اللوجو للطباعة 🖨️</h2>
+                <p class="page-sub">نسخ اللوجو للطباعة المائية</p>
+            </div>
+            <button class="btn btn-gold" onclick="window.print()">🖨️ طباعة</button>
+        </div>
+
+        <div class="logo-grid">
+            <div class="card logo-card">
+                <div class="card-title" style="justify-content:center;margin-bottom:14px">🌙 نسخة داكنة</div>
+                <div class="logo-preview preview-dark">
+                    <img src="/assets/logo.svg" width="160" height="160" alt="KaramStore Logo">
+                </div>
+                <p class="logo-hint">للخلفيات الداكنة</p>
+            </div>
+
+            <div class="card logo-card">
+                <div class="card-title" style="justify-content:center;margin-bottom:14px">☀️ للطباعة</div>
+                <div class="logo-preview preview-light">
+                    <img src="/assets/logo-dark.svg" width="160" height="160" alt="KaramStore Logo Print">
+                </div>
+                <p class="logo-hint">طباعة على الورق</p>
+            </div>
+
+            <div class="card logo-card">
+                <div class="card-title" style="justify-content:center;margin-bottom:14px">💧 طباعة مائية</div>
+                <div class="logo-preview preview-wm">
+                    <img src="/assets/logo-dark.svg" width="160" height="160" alt="Watermark" style="opacity:.22">
+                </div>
+                <p class="logo-hint">شفافة على الصور</p>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<!-- ======================================================
+     BOTTOM NAV (mobile)
+====================================================== -->
+<nav class="bottom-nav">
+    <button class="bnav-item active" data-view="dashboard" onclick="showView('dashboard',this)">
+        <span class="bni">📊</span><span class="bnl">الرئيسية</span>
+    </button>
+    <button class="bnav-item" data-view="products" onclick="showView('products',this)">
+        <span class="bni">📦</span><span class="bnl">المنتجات</span>
+    </button>
+    <button class="bnav-item" data-view="sales" onclick="showView('sales',this)">
+        <span class="bni">💰</span><span class="bnl">المبيعات</span>
+    </button>
+    <button class="bnav-item" data-view="logo" onclick="showView('logo',this)">
+        <span class="bni">🖨️</span><span class="bnl">اللوجو</span>
+    </button>
+</nav>
+
+<!-- ======================================================
+     MODALS
+====================================================== -->
+
+<!-- Product Modal -->
+<div class="modal-overlay" id="modal-product" onclick="overlayClick(event,'modal-product')">
+    <div class="modal">
+        <div class="modal-head">
+            <div class="modal-title">📦 إضافة منتج جديد</div>
+            <button class="modal-x" onclick="closeModal('modal-product')">✕</button>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">اسم المنتج *</label>
+            <input type="text" class="form-input" id="p-name" placeholder="مثال: ورق كوشيه A4">
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">التصنيف</label>
+                <select class="form-input" id="p-cat">
+                    <option>ورق</option><option>حبر</option><option>طباعة</option>
+                    <option>تصميم</option><option>معدات</option><option>أخرى</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">الكمية</label>
+                <input type="number" class="form-input" id="p-qty" placeholder="1" min="1">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">سعر الشراء (ج) *</label>
+                <input type="number" class="form-input" id="p-buy" placeholder="0.00" step="0.01" min="0">
+            </div>
+            <div class="form-group">
+                <label class="form-label">سعر البيع (ج)</label>
+                <input type="number" class="form-input" id="p-sell" placeholder="0.00" step="0.01" min="0">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">ملاحظات</label>
+            <input type="text" class="form-input" id="p-notes" placeholder="أي تفاصيل إضافية...">
+        </div>
+
+        <div class="modal-foot">
+            <button class="btn btn-gold btn-full" onclick="submitProduct()">✓ إضافة المنتج</button>
+            <button class="btn btn-outline" onclick="closeModal('modal-product')">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Sale Modal -->
+<div class="modal-overlay" id="modal-sale" onclick="overlayClick(event,'modal-sale')">
+    <div class="modal">
+        <div class="modal-head">
+            <div class="modal-title">💰 تسجيل مبيعة / شغل</div>
+            <button class="modal-x" onclick="closeModal('modal-sale')">✕</button>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">وصف الشغل / المبيعة *</label>
+            <input type="text" class="form-input" id="s-desc" placeholder="مثال: طباعة 100 ورقة، شغل تصميم...">
+        </div>
+        <div class="form-group">
+            <label class="form-label">المبلغ المحصّل (ج) *</label>
+            <input type="number" class="form-input" id="s-amount" placeholder="0.00" step="0.01" min="0">
+        </div>
+        <div class="form-group">
+            <label class="form-label">نوع الإيراد</label>
+            <select class="form-input" id="s-type">
+                <option value="طباعة">طباعة</option>
+                <option value="بيع">بيع منتج</option>
+                <option value="تصميم">تصميم</option>
+                <option value="طباعة مائية">طباعة مائية</option>
+                <option value="خدمة">خدمة أخرى</option>
+            </select>
+        </div>
+
+        <div class="modal-foot">
+            <button class="btn btn-gold btn-full" onclick="submitSale()">✓ تسجيل المبيعة</button>
+            <button class="btn btn-outline" onclick="closeModal('modal-sale')">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/data.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>
