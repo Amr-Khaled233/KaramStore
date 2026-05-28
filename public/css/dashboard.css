@@ -593,6 +593,25 @@ tr:hover td { background: rgba(245,158,11,.02); }
 .row-selected td:first-child { border-right: 3px solid var(--gold); }
 
 /* ===========================
+   MONTH TABLES GRID
+=========================== */
+.month-tables-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+@media (max-width: 900px) { .month-tables-grid { grid-template-columns: 1fr; } }
+
+/* ===========================
+   BOTTOM NAV — 4 items
+=========================== */
+@media (max-width: 768px) {
+    .bnav-item { padding: 6px 2px; }
+    .bni       { font-size: 19px; }
+    .bnl       { font-size: 9px; }
+}
+
+/* ===========================
    LOADING OVERLAY
 =========================== */
 .loading-overlay {

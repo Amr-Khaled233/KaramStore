@@ -12,7 +12,6 @@
 </head>
 <body>
 
-<!-- Loading overlay -->
 <div class="loading-overlay" id="loading-overlay">
     <div class="loading-spinner"></div>
 </div>
@@ -29,23 +28,19 @@
 
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
-<!-- ======================================================
-     SIDEBAR
-====================================================== -->
+<!-- ======================================================  SIDEBAR  -->
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-head">
         <img src="/assets/logo.svg" width="46" height="46" alt="">
-        <div>
-            <div class="s-brand">KaramStore</div>
-            <div class="s-sub">لوحة التحكم</div>
-        </div>
+        <div><div class="s-brand">KaramStore</div><div class="s-sub">لوحة التحكم</div></div>
     </div>
-
     <div class="sidebar-time" id="sidebar-time"></div>
-
     <nav class="sidebar-nav">
         <a class="nav-item active" data-view="home"     onclick="showView('home')">
             <span class="nav-icon">📊</span><span>الملخص</span>
+        </a>
+        <a class="nav-item" data-view="months"   onclick="showView('months')">
+            <span class="nav-icon">📅</span><span>الأشهر</span>
         </a>
         <a class="nav-item" data-view="expenses" onclick="showView('expenses')">
             <span class="nav-icon">🔴</span><span>المصروفات</span>
@@ -54,36 +49,21 @@
             <span class="nav-icon">🟢</span><span>الإيرادات</span>
         </a>
     </nav>
-
     <div class="sidebar-foot">
         <button class="logout-btn" onclick="logout()">🚪 تسجيل الخروج</button>
         <div class="sidebar-copy">KaramStore © 2026</div>
     </div>
 </aside>
 
-<!-- ======================================================
-     MAIN
-====================================================== -->
+<!-- ======================================================  MAIN  -->
 <main class="main">
 
-    <!-- Month Navigation (shared across all views) -->
-    <div class="month-nav" id="month-nav">
-        <button class="month-nav-btn" onclick="changeMonth(-1)" title="الشهر السابق">◀</button>
-        <div class="month-display">
-            <span id="selected-month-label">—</span>
-        </div>
-        <button class="month-nav-btn" id="btn-next-month" onclick="changeMonth(1)" title="الشهر التالي">▶</button>
-        <button class="btn btn-outline btn-sm" id="btn-now" onclick="goToNow()" style="opacity:0;pointer-events:none">
-            الآن
-        </button>
-    </div>
-
-    <!-- ========== HOME ========== -->
+    <!-- ============ HOME ============ -->
     <div class="view active" id="view-home">
         <div class="page-header">
             <div>
-                <h2 class="page-title">لوحة التحكم</h2>
-                <p class="page-sub">ملخص مصروفاتك وإيراداتك</p>
+                <h2 class="page-title">الملخص العام</h2>
+                <p class="page-sub">إجمالي كل المصروفات والإيرادات</p>
             </div>
             <div class="header-btns">
                 <button class="btn btn-outline" onclick="openAddExpense()">🔴 + مصروف</button>
@@ -91,118 +71,168 @@
             </div>
         </div>
 
-        <!-- Profit/loss -->
-        <div class="profit-card is-zero" id="profit-card">
-            <div class="pc-main">
-                <div class="pc-icon">➖</div>
+        <!-- Profit card -->
+        <div class="profit-card is-zero" id="home-profit-card">
+            <div class="pc-main"><div class="pc-icon">➖</div>
                 <div class="pc-info">
                     <div class="pc-label">⚪ تعادل</div>
                     <div class="pc-amount">0.00 ج</div>
                 </div>
             </div>
-            <div class="pc-sub">ابدأ بإضافة مصروفاتك وإيراداتك</div>
+            <div class="pc-sub">لا يوجد بيانات بعد</div>
         </div>
 
         <!-- Stats -->
         <div class="stats-grid" style="margin-top:16px">
             <div class="stat-card" style="--accent:var(--red)">
                 <div class="stat-icon" style="--ibg:rgba(239,68,68,.15)">🔴</div>
-                <div>
-                    <div class="stat-val" id="h-total-exp">0.00 ج</div>
-                    <div class="stat-lbl">إجمالي المصروفات</div>
-                </div>
+                <div><div class="stat-val" id="home-total-exp">0.00 ج</div><div class="stat-lbl">إجمالي المصروفات</div></div>
             </div>
             <div class="stat-card" style="--accent:var(--green)">
                 <div class="stat-icon" style="--ibg:rgba(16,185,129,.15)">🟢</div>
-                <div>
-                    <div class="stat-val" id="h-total-rev">0.00 ج</div>
-                    <div class="stat-lbl">إجمالي الإيرادات</div>
-                </div>
+                <div><div class="stat-val" id="home-total-rev">0.00 ج</div><div class="stat-lbl">إجمالي الإيرادات</div></div>
             </div>
         </div>
 
-        <!-- 2-col: top expenses + monthly summary -->
+        <!-- Top expenses + months table -->
         <div class="home-grid">
-
             <div class="card">
                 <div class="card-head">
-                    <div class="card-title"><span>🏆</span> أكثر المصروفات</div>
+                    <div class="card-title"><span>🏆</span> أكثر المصروفات (كلها)</div>
                     <button class="btn btn-outline btn-sm" onclick="showView('expenses')">عرض الكل</button>
                 </div>
-                <div id="top-exp-list" class="top-exp-list"></div>
+                <div id="home-top-exp" class="top-exp-list"></div>
             </div>
 
             <div class="card">
                 <div class="card-head">
-                    <div class="card-title"><span>📅</span> تفاصيل الأشهر</div>
+                    <div class="card-title"><span>📅</span> ملخص الأشهر</div>
+                    <button class="btn btn-outline btn-sm" onclick="showView('months')">تفاصيل</button>
                 </div>
-                <p style="font-size:11px;color:var(--text3);margin-bottom:10px">اضغط على أي شهر لعرضه</p>
                 <div class="table-wrap">
                     <table>
-                        <thead>
-                            <tr>
-                                <th>الشهر</th>
-                                <th>مصروفات</th>
-                                <th>إيرادات</th>
-                                <th>النتيجة</th>
-                            </tr>
-                        </thead>
-                        <tbody id="monthly-body"></tbody>
+                        <thead><tr><th>الشهر</th><th>مصروفات</th><th>إيرادات</th><th>النتيجة</th></tr></thead>
+                        <tbody id="home-monthly-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MONTHS ============ -->
+    <div class="view" id="view-months">
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">الأشهر 📅</h2>
+                <p class="page-sub" id="months-sub">مصروفات وإيرادات كل شهر على حدة</p>
+            </div>
+            <div class="header-btns">
+                <button class="btn btn-outline btn-sm" onclick="goToNow()">الشهر الحالي</button>
+            </div>
+        </div>
+
+        <!-- Month nav -->
+        <div class="month-nav">
+            <button class="month-nav-btn" onclick="changeMonth(-1)" title="الشهر السابق">◀</button>
+            <div class="month-display"><span id="selected-month-label">—</span></div>
+            <button class="month-nav-btn" id="btn-next-month" onclick="changeMonth(1)" title="الشهر التالي">▶</button>
+        </div>
+
+        <!-- Month profit card -->
+        <div class="profit-card is-zero" id="month-profit-card">
+            <div class="pc-main"><div class="pc-icon">➖</div>
+                <div class="pc-info">
+                    <div class="pc-label">⚪ تعادل</div>
+                    <div class="pc-amount">0.00 ج</div>
+                </div>
+            </div>
+            <div class="pc-sub">لا يوجد بيانات في هذا الشهر</div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid" style="margin-top:16px;margin-bottom:20px">
+            <div class="stat-card" style="--accent:var(--red)">
+                <div class="stat-icon" style="--ibg:rgba(239,68,68,.15)">🔴</div>
+                <div><div class="stat-val" id="month-total-exp">0.00 ج</div><div class="stat-lbl">مصروفات الشهر</div></div>
+            </div>
+            <div class="stat-card" style="--accent:var(--green)">
+                <div class="stat-icon" style="--ibg:rgba(16,185,129,.15)">🟢</div>
+                <div><div class="stat-val" id="month-total-rev">0.00 ج</div><div class="stat-lbl">إيرادات الشهر</div></div>
+            </div>
+        </div>
+
+        <!-- Two tables side by side -->
+        <div class="month-tables-grid">
+            <!-- Expenses for this month -->
+            <div class="card">
+                <div class="card-head">
+                    <div class="card-title"><span>🔴</span> المصروفات</div>
+                    <button class="btn btn-outline btn-sm" onclick="openAddExpense()">+ إضافة</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>#</th><th>الاسم</th><th>المبلغ</th><th>التاريخ</th><th></th></tr></thead>
+                        <tbody id="month-exp-body"></tbody>
                     </table>
                 </div>
             </div>
 
+            <!-- Revenue for this month -->
+            <div class="card">
+                <div class="card-head">
+                    <div class="card-title"><span>🟢</span> الإيرادات</div>
+                    <button class="btn btn-outline btn-sm" onclick="openAddRevenue()">+ إضافة</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>#</th><th>الاسم</th><th>المبلغ</th><th>التاريخ</th><th></th></tr></thead>
+                        <tbody id="month-rev-body"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- ========== EXPENSES ========== -->
+    <!-- ============ EXPENSES (all) ============ -->
     <div class="view" id="view-expenses">
         <div class="page-header">
             <div>
                 <h2 class="page-title">المصروفات 🔴</h2>
-                <p class="page-sub">اللي دفعته</p>
+                <p class="page-sub">كل المصروفات</p>
             </div>
             <button class="btn btn-gold" onclick="openAddExpense()">+ إضافة مصروف</button>
         </div>
-
         <div class="total-bar">
             <span>إجمالي المصروفات:</span>
             <strong id="exp-total" style="color:var(--red)">0.00 ج</strong>
         </div>
-
         <div class="card">
             <div class="table-wrap">
                 <table>
-                    <thead>
-                        <tr><th>#</th><th>الاسم</th><th>المبلغ</th><th>اليوم</th><th>التاريخ والوقت</th><th></th></tr>
-                    </thead>
+                    <thead><tr><th>#</th><th>الاسم</th><th>المبلغ</th><th>اليوم</th><th>التاريخ والوقت</th><th></th></tr></thead>
                     <tbody id="exp-body"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- ========== REVENUE ========== -->
+    <!-- ============ REVENUE (all) ============ -->
     <div class="view" id="view-revenue">
         <div class="page-header">
             <div>
                 <h2 class="page-title">الإيرادات 🟢</h2>
-                <p class="page-sub">اللي حصّلته</p>
+                <p class="page-sub">كل الإيرادات</p>
             </div>
             <button class="btn btn-gold" onclick="openAddRevenue()">+ إضافة إيراد</button>
         </div>
-
         <div class="total-bar">
             <span>إجمالي الإيرادات:</span>
             <strong id="rev-total" style="color:var(--green)">0.00 ج</strong>
         </div>
-
         <div class="card">
             <div class="table-wrap">
                 <table>
-                    <thead>
-                        <tr><th>#</th><th>الاسم</th><th>المبلغ</th><th>اليوم</th><th>التاريخ والوقت</th><th></th></tr>
-                    </thead>
+                    <thead><tr><th>#</th><th>الاسم</th><th>المبلغ</th><th>اليوم</th><th>التاريخ والوقت</th><th></th></tr></thead>
                     <tbody id="rev-body"></tbody>
                 </table>
             </div>
@@ -211,10 +241,13 @@
 
 </main>
 
-<!-- Bottom Nav -->
+<!-- Bottom Nav (4 items) -->
 <nav class="bottom-nav">
     <button class="bnav-item active" data-view="home"     onclick="showView('home')">
         <span class="bni">📊</span><span class="bnl">الملخص</span>
+    </button>
+    <button class="bnav-item" data-view="months"   onclick="showView('months')">
+        <span class="bni">📅</span><span class="bnl">الأشهر</span>
     </button>
     <button class="bnav-item" data-view="expenses" onclick="showView('expenses')">
         <span class="bni">🔴</span><span class="bnl">مصروفات</span>
@@ -241,7 +274,7 @@
         </div>
         <div class="form-group">
             <label class="form-label">ملاحظات</label>
-            <input type="text"   class="form-input" id="exp-notes"  placeholder="أي تفاصيل إضافية...">
+            <input type="text"   class="form-input" id="exp-notes"  placeholder="أي تفاصيل...">
         </div>
         <div class="modal-foot">
             <button class="btn btn-gold btn-full" onclick="submitExpense()">✓ حفظ</button>
@@ -259,7 +292,7 @@
         </div>
         <div class="form-group">
             <label class="form-label">الاسم / الوصف *</label>
-            <input type="text"   class="form-input" id="rev-name"   placeholder="مثال: بيع ورق، شغل طباعة لعميل...">
+            <input type="text"   class="form-input" id="rev-name"   placeholder="مثال: بيع ورق، شغل طباعة...">
         </div>
         <div class="form-group">
             <label class="form-label">المبلغ المحصّل (ج) *</label>
@@ -267,7 +300,7 @@
         </div>
         <div class="form-group">
             <label class="form-label">ملاحظات</label>
-            <input type="text"   class="form-input" id="rev-notes"  placeholder="أي تفاصيل إضافية...">
+            <input type="text"   class="form-input" id="rev-notes"  placeholder="أي تفاصيل...">
         </div>
         <div class="modal-foot">
             <button class="btn btn-gold btn-full" onclick="submitRevenue()">✓ حفظ</button>
