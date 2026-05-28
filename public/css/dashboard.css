@@ -1,4 +1,12 @@
 /* ===========================
+   THEMES
+=========================== */
+:root { --gold: #f59e0b; --gold2: #fbbf24; --gold3: #fde68a; }
+[data-theme="blue"]   { --gold: #3b82f6; --gold2: #60a5fa; --gold3: #bfdbfe; }
+[data-theme="purple"] { --gold: #a855f7; --gold2: #c084fc; --gold3: #e9d5ff; }
+[data-theme="teal"]   { --gold: #06b6d4; --gold2: #22d3ee; --gold3: #a5f3fc; }
+
+/* ===========================
    LAYOUT
 =========================== */
 body { display: flex; min-height: 100vh; }
@@ -395,6 +403,136 @@ tr:hover td { background: rgba(245,158,11,.02); }
 /* Mini stat cards */
 .stat-card.mini { padding: 14px; }
 .stat-val.sm    { font-size: 18px; }
+
+/* ===========================
+   PROFIT / LOSS CARD
+=========================== */
+.profit-card {
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border: 2px solid transparent;
+    transition: all .3s;
+    margin-bottom: 4px;
+}
+.profit-card.is-profit {
+    background: rgba(16,185,129,.12);
+    border-color: rgba(16,185,129,.35);
+}
+.profit-card.is-loss {
+    background: rgba(239,68,68,.12);
+    border-color: rgba(239,68,68,.35);
+}
+.profit-card.is-zero {
+    background: rgba(100,116,139,.12);
+    border-color: rgba(100,116,139,.3);
+}
+.pc-main { display: flex; align-items: center; gap: 14px; }
+.pc-icon { font-size: 36px; line-height: 1; }
+.pc-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text2);
+    margin-bottom: 4px;
+    letter-spacing: .5px;
+}
+.pc-amount {
+    font-size: 28px;
+    font-weight: 900;
+    line-height: 1;
+}
+.is-profit .pc-amount { color: var(--green); }
+.is-loss   .pc-amount { color: var(--red); }
+.is-zero   .pc-amount { color: var(--text2); }
+.pc-sub {
+    font-size: 12px;
+    color: var(--text2);
+    text-align: end;
+}
+
+/* ===========================
+   EDIT BUTTON
+=========================== */
+.btn-edit {
+    background: rgba(59,130,246,.12);
+    color: var(--blue);
+    border: 1.5px solid rgba(59,130,246,.2);
+}
+.btn-edit:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+/* ===========================
+   SETTINGS PANEL
+=========================== */
+.settings-panel {
+    padding: 12px 14px;
+    border-top: 1px solid var(--border);
+    margin-top: auto;
+}
+.settings-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--text3);
+    margin-bottom: 10px;
+}
+.settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.settings-lbl { font-size: 11px; color: var(--text2); flex-shrink: 0; }
+
+/* Language toggle */
+.lang-toggle { display: flex; gap: 4px; }
+.lang-btn {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    transition: all .2s;
+}
+.lang-btn.active,
+.lang-btn:hover {
+    background: var(--gold);
+    color: #0a0f1e;
+    border-color: var(--gold);
+}
+
+/* Color swatches */
+.swatches { display: flex; gap: 8px; align-items: center; }
+.swatch {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2.5px solid transparent;
+    transition: transform .2s, border-color .2s;
+}
+.swatch:hover    { transform: scale(1.2); }
+.swatch.active   { border-color: var(--text); transform: scale(1.15); }
+.swatch[data-theme="gold"]   { background: #f59e0b; }
+.swatch[data-theme="blue"]   { background: #3b82f6; }
+.swatch[data-theme="purple"] { background: #a855f7; }
+.swatch[data-theme="teal"]   { background: #06b6d4; }
+
+/* LTR adjustments for English mode */
+[dir="ltr"] .sidebar { right: auto; left: 0; border-left: none; border-right: 1px solid var(--border); }
+[dir="ltr"] .main    { margin-right: 0; margin-left: var(--sidebar-w); }
+[dir="ltr"] table    { direction: ltr; }
+[dir="ltr"] th, [dir="ltr"] td { text-align: left; }
+[dir="ltr"] .page-title, [dir="ltr"] .page-sub { text-align: left; }
+[dir="ltr"] .form-input { direction: ltr; }
+[dir="ltr"] .bottom-nav { direction: ltr; }
+[dir="ltr"] .toast { font-family: 'Cairo', sans-serif; }
 
 /* ===========================
    RESPONSIVE — TABLET
