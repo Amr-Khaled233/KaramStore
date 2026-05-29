@@ -16,11 +16,36 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 /* ============================================================
-   MONGODB CONNECTION
+   MONGODB CONNECTION (serverless-safe, cached)
 ============================================================ */
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('✅  MongoDB متصل'))
-    .catch(err => console.error('❌  MongoDB خطأ:', err.message));
+let cached = global._ksMongoose;
+if (!cached) cached = global._ksMongoose = { conn: null, promise: null };
+
+async function connectDB() {
+    if (cached.conn) return cached.conn;
+    if (!process.env.MONGODB_URI) {
+        throw new Error('متغيّر MONGODB_URI مش موجود في إعدادات السيرفر');
+    }
+    if (!cached.promise) {
+        cached.promise = mongoose
+            .connect(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 8000 })
+            .then(m => { console.log('✅  MongoDB متصل'); return m; })
+            .catch(err => { cached.promise = null; throw err; });
+    }
+    cached.conn = await cached.promise;
+    return cached.conn;
+}
+
+// تأكد من الاتصال قبل أي عملية على قاعدة البيانات
+async function dbGuard(req, res, next) {
+    try {
+        await connectDB();
+        next();
+    } catch (err) {
+        console.error('❌  MongoDB:', err.message);
+        res.status(503).json({ error: 'قاعدة البيانات مش متصلة — تأكد من إعدادات MONGODB_URI' });
+    }
+}
 
 /* ============================================================
    SCHEMAS
@@ -83,13 +108,13 @@ function crudRouter(Model) {
     return r;
 }
 
-app.use('/api/expenses', crudRouter(Expense));
-app.use('/api/revenue',  crudRouter(Revenue));
+app.use('/api/expenses', dbGuard, crudRouter(Expense));
+app.use('/api/revenue',  dbGuard, crudRouter(Revenue));
 
 /* ============================================================
    SUMMARY — كل الأشهر
 ============================================================ */
-app.get('/api/summary', async (req, res) => {
+app.get('/api/summary', dbGuard, async (req, res) => {
     try {
         const [exp, rev] = await Promise.all([
             Expense.aggregate([
@@ -134,6 +159,7 @@ app.get('/', (req, res) =>
    START (local only)
 ============================================================ */
 if (require.main === module) {
+    connectDB().catch(err => console.error('❌  MongoDB:', err.message));
     const server = app.listen(PORT, () => {
         console.log(`\n🏪  KaramStore على: http://localhost:${PORT}\n`);
     });
