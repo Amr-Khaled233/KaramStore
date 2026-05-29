@@ -447,6 +447,7 @@ async function renderMonths() {
                         <td style="color:var(--red);font-weight:700">${fmtMoney(e.amount)}</td>
                         <td style="font-size:12px;color:var(--text2)">
                             <strong style="color:var(--gold)">${e.dayName||''}</strong><br>${rawDate}
+                            ${e.time ? `<br><span style="opacity:.65">⏰ ${e.time}</span>` : ''}
                         </td>
                         <td><div style="display:flex;gap:5px">
                             <button class="btn btn-edit btn-sm"
@@ -475,6 +476,7 @@ async function renderMonths() {
                         <td style="color:var(--green);font-weight:700">${fmtMoney(r.amount)}</td>
                         <td style="font-size:12px;color:var(--text2)">
                             <strong style="color:var(--gold)">${r.dayName||''}</strong><br>${r.date||''}
+                            ${r.time ? `<br><span style="opacity:.65">⏰ ${r.time}</span>` : ''}
                         </td>
                         <td><div style="display:flex;gap:5px">
                             <button class="btn btn-edit btn-sm"
