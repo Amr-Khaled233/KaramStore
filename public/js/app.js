@@ -4,7 +4,7 @@ checkAuth();
    STATE
 ============================================================ */
 let selectedMonth = currentMonthKey();
-let currentView   = 'home';
+let currentView   = 'months';
 let _editExpId    = null;
 let _editRevId    = null;
 
@@ -491,4 +491,5 @@ async function renderMonths() {
 }
 
 /* ---- Init ---- */
-renderHome();
+initMonthPicker();
+renderMonths();

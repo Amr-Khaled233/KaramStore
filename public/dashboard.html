@@ -36,11 +36,11 @@
     </div>
     <div class="sidebar-time" id="sidebar-time"></div>
     <nav class="sidebar-nav">
-        <a class="nav-item active" data-view="home" onclick="showView('home')">
-            <span class="nav-icon">📊</span><span>الملخص</span>
-        </a>
-        <a class="nav-item" data-view="months" onclick="showView('months')">
+        <a class="nav-item active" data-view="months" onclick="showView('months')">
             <span class="nav-icon">📅</span><span>الأشهر</span>
+        </a>
+        <a class="nav-item" data-view="home" onclick="showView('home')">
+            <span class="nav-icon">📊</span><span>الملخص</span>
         </a>
     </nav>
     <div class="sidebar-foot">
@@ -53,7 +53,7 @@
 <main class="main">
 
     <!-- ============ HOME ============ -->
-    <div class="view active" id="view-home">
+    <div class="view" id="view-home">
         <div class="page-header">
             <div>
                 <h2 class="page-title">الملخص العام</h2>
@@ -106,7 +106,7 @@
     </div>
 
     <!-- ============ MONTHS ============ -->
-    <div class="view" id="view-months">
+    <div class="view active" id="view-months">
         <div class="page-header">
             <div>
                 <h2 class="page-title">الأشهر 📅</h2>
@@ -189,11 +189,11 @@
 
 <!-- Bottom Nav -->
 <nav class="bottom-nav">
-    <button class="bnav-item active" data-view="home"   onclick="showView('home')">
-        <span class="bni">📊</span><span class="bnl">الملخص</span>
-    </button>
-    <button class="bnav-item" data-view="months" onclick="showView('months')">
+    <button class="bnav-item active" data-view="months" onclick="showView('months')">
         <span class="bni">📅</span><span class="bnl">الأشهر</span>
+    </button>
+    <button class="bnav-item" data-view="home"   onclick="showView('home')">
+        <span class="bni">📊</span><span class="bnl">الملخص</span>
     </button>
 </nav>
 
